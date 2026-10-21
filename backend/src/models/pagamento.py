@@ -2,13 +2,16 @@ from ..db.connection import Base
 from sqlalchemy import Column, Integer, Numeric
 
 class PagamentoModel(Base):
+    # nome da tabela
     __tablename__ = "pagamento"
 
+    # colunas
     id = Column(Integer, primary_key=True)
     dinheiro = Column(Numeric(10,2))
     pix = Column(Numeric(10,2))
     cartao = Column(Numeric(10,2))
 
+    # construtor
     def __init__(self, dinheiro: float, pix: float, cartao: float):
         self.dinheiro = dinheiro
         self.pix = pix
