@@ -65,6 +65,22 @@ class ErroCategoriaExiste(HTTPException):
 #endregion
 
 #region ERROS Cardapio_has_estoque
+class ErroCardapioNaoEncontrado(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=404,
+            detail="Cardapio não foi encontrada!!"
+        )
+
+class ErroCardapioExiste(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=409,
+            detail="Cardapio já existe!!"
+        )
+#endregion
+
+#region ERROS Cardapio
 class ErroCardapio_has_estoqueNaoEncontrado(HTTPException):
     def __init__(self):
         super().__init__(
@@ -241,7 +257,7 @@ class ErroPedidoExiste(HTTPException):
 #endregion
 
 #region ERROS Combo
-class ErroComboNaoEncontrado(HTTPException):
+class ErroIs_comboNaoEncontrado(HTTPException):
     def __init__(self):
         super().__init__(
             status_code=404,
