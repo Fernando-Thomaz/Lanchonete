@@ -7,7 +7,9 @@ from os import getenv
 load_dotenv()
 
 # url do banco
-db = getenv("DB_URL")
+# usa um fallback local para que a aplicação possa iniciar mesmo sem variavel de ambiente
+# configurada no ambiente de desenvolvimento
+db = getenv("DB_URL", "sqlite:///./lanchonete.db")
 
 # declara Base
 Base = declarative_base()

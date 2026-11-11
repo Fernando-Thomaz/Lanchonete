@@ -22,7 +22,7 @@ def create_mesa(session, dados):
         session.add(mesa)
         session.commit()
 
-        return {"mensagem": "Mesa criada com sucesso!!"}
+        return {"mensagem": "Mesa criada com sucesso!!", "id": mesa.id}
 
     except Exception as e:
         session.rollback()

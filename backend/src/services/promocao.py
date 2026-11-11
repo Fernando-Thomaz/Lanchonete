@@ -24,7 +24,7 @@ def create_promocao(session, dados):
         session.add(promocao)
         session.commit()
 
-        return {"mensagem": "Promocao criada com sucesso!!"}
+        return {"mensagem": "Promocao criada com sucesso!!", "id": promocao.id}
 
     except Exception as e:
         session.rollback()

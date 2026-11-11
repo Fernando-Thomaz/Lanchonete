@@ -16,9 +16,9 @@ def create_categoria(session, dados):
 
         # salva no banco
         session.add(categoria)
-        session.commit(categoria)
+        session.commit()
 
-        return {"mensagem":"Categoria criada com sucesso!!"}
+        return {"mensagem":"Categoria criada com sucesso!!", "id": categoria.id}
 
     except Exception as e:
         session.rollback()

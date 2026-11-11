@@ -24,7 +24,7 @@ def create_estoque(session, dados):
         session.add(estoque)
         session.commit()
 
-        return {"mensagem": "Estoque criado com sucesso!!"}
+        return {"mensagem": "Estoque criado com sucesso!!", "id": estoque.id}
 
     except Exception as e:
         session.rollback()

@@ -22,9 +22,9 @@ def create_cardapio(session, dados):
 
         # salva no banco
         session.add(cardapio)
-        session.commit(cardapio)
+        session.commit()
 
-        return {"mensagem":"Cardapio criado com sucesso!!"}
+        return {"mensagem":"Cardapio criado com sucesso!!", "id": cardapio.id}
 
     except Exception as e:
         session.rollback()

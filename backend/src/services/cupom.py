@@ -20,9 +20,9 @@ def create_cupom(session, dados):
 
         # salva no banco
         session.add(cupom)
-        session.commit(cupom)
+        session.commit()
 
-        return {"mensagem":"Cupom criado com sucesso!!"}
+        return {"mensagem":"Cupom criado com sucesso!!", "id": cupom.id}
 
     except Exception as e:
         session.rollback()

@@ -11,9 +11,9 @@ def create_avaliacao(session, dados):
 
         # salva no banco
         session.add(avaliacao)
-        session.commit(avaliacao)
+        session.commit()
 
-        return {"mensagem":"Avaliacao criada com sucesso!!"}
+        return {"mensagem":"Avaliacao criada com sucesso!!", "id": avaliacao.id}
 
     except Exception as e:
         session.rollback()

@@ -13,3 +13,9 @@ class PagamentoSchemaRead(BaseModel):
     dinheiro: float
     pix: float
     cartao: float
+
+# schema para atualizar
+class PagamentoSchemaUpdate(BaseModel):
+    dinheiro: Optional[float] = None
+    pix: Optional[float] = None
+    cartao: Optional[float] = None

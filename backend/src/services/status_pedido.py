@@ -22,7 +22,7 @@ def create_status_pedido(session, dados):
         session.add(status_pedido)
         session.commit()
 
-        return {"mensagem": "Status_pedido criada com sucesso!!"}
+        return {"mensagem": "Status_pedido criada com sucesso!!", "id": status_pedido.id}
 
     except Exception as e:
         session.rollback()

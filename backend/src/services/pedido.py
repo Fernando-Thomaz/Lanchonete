@@ -21,7 +21,7 @@ def create_pedido(session, dados):
         session.add(pedido)
         session.commit()
 
-        return {"mensagem": "Pedido criada com sucesso!!"}
+        return {"mensagem": "Pedido criada com sucesso!!", "id": pedido.id}
 
     except Exception as e:
         session.rollback()

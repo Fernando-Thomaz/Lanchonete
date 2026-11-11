@@ -4,6 +4,6 @@ from .db.connection import Session
 def get_session():
     session = Session()
     try:
-        yield Session
+        yield session
     finally:
         session.close()

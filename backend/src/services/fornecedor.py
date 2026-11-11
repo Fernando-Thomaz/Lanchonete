@@ -20,7 +20,7 @@ def create_fornecedor(session, dados):
         session.add(fornecedor)
         session.commit()
 
-        return {"mensagem": "Fornecedor criada com sucesso!!"}
+        return {"mensagem": "Fornecedor criada com sucesso!!", "id": fornecedor.id}
 
     except Exception as e:
         session.rollback()

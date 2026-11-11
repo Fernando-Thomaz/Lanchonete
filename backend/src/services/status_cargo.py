@@ -24,7 +24,7 @@ def create_status_cargo(session, dados):
         session.add(status_cargo)
         session.commit()
 
-        return {"mensagem": "Status_cargo criada com sucesso!!"}
+        return {"mensagem": "Status_cargo criada com sucesso!!", "id": status_cargo.id}
 
     except Exception as e:
         session.rollback()

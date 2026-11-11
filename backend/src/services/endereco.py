@@ -22,9 +22,9 @@ def create_endereco(session, dados):
 
         # salva no banco
         session.add(endereco)
-        session.commit(endereco)
+        session.commit()
 
-        return {"mensagem":"Endereco criado com sucesso!!"}
+        return {"mensagem":"Endereco criado com sucesso!!", "id": endereco.id}
 
     except Exception as e:
         session.rollback()

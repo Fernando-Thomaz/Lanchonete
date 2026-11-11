@@ -18,9 +18,9 @@ def create_cliente(session, dados):
 
         # salva no banco
         session.add(cliente)
-        session.commit(cliente)
+        session.commit()
 
-        return {"mensagem":"Cliente criado com sucesso!!"}
+        return {"mensagem":"Cliente criado com sucesso!!", "id": cliente.id}
 
     except Exception as e:
         session.rollback()

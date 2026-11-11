@@ -22,7 +22,7 @@ def create_is_combo(session, dados):
         session.add(is_combo)
         session.commit()
 
-        return {"mensagem": "Is_combo criada com sucesso!!"}
+        return {"mensagem": "Is_combo criada com sucesso!!", "id": is_combo.id}
 
     except Exception as e:
         session.rollback()

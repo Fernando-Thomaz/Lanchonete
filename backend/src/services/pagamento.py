@@ -20,7 +20,7 @@ def create_pagamento(session, dados):
         session.add(pagamento)
         session.commit()
 
-        return {"mensagem": "Pagamento criada com sucesso!!"}
+        return {"mensagem": "Pagamento criada com sucesso!!", "id": pagamento.id}
 
     except Exception as e:
         session.rollback()

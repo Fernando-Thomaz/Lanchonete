@@ -16,7 +16,7 @@ def create_trabalhador(session, dados):
         session.add(trabalhador)
         session.commit()
 
-        return {"mensagem": "Trabalhador criada com sucesso!!"}
+        return {"mensagem": "Trabalhador criada com sucesso!!", "id": trabalhador.id}
 
     except Exception as e:
         session.rollback()
