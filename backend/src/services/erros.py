@@ -1,4 +1,5 @@
 from fastapi import HTTPException
+from sqlalchemy.exc import IntegrityError
 
 #region ERROS Fornecedor
 class ErroFornecedorNaoEncontrado(HTTPException):
@@ -301,6 +302,15 @@ class ErroTrabalhador_has_pedidoExiste(HTTPException):
         super().__init__(
             status_code=409,
             detail="Trabalhador_has_pedido já existe!!"
+        )
+#endregion
+
+#region ERROS Chave estrangeira
+class ErroChaveEstrangeira(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=409,
+            detail="A operação viola uma chave estrangeira: verifique as referências informadas ou os registros vinculados."
         )
 #endregion
 

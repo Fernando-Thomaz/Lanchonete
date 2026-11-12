@@ -8,17 +8,15 @@ def create_is_combo(session, dados):
                                                  Is_comboModel.pedido_id == dados.pedido_id).first()
     if existe:
         session.rollback()
-        return ErroIs_comboExiste()
+        raise ErroIs_comboExiste()
 
     # tratamento de erros
     try:
-        # criando objeto
-        is_combo = Is_comboModel(
-            dados.cardapio_id,
-            dados.pedido_id
-        )
+        # cria objeto
+        is_combo = Is_comboModel(dados.cardapio_id,
+                                 dados.pedido_id)
 
-        # salvando no banco
+        # salva no banco
         session.add(is_combo)
         session.commit()
 
@@ -42,18 +40,18 @@ def update_is_combo(session, dados, id):
                                                      Is_comboModel.pedido_id == dados.pedido_id).first()
     if not existe_old:
         session.rollback()
-        return ErroIs_comboNaoEncontrado()
+        raise ErroIs_comboNaoEncontrado()
     if existe_new:
         session.rollback()
-        return ErroIs_comboExiste()
+        raise ErroIs_comboExiste()
 
     # tratamento de erros
     try:
-        # atualiza objeto
+        # atualiza o objeto
         existe_old.cardapio_id = dados.cardapio_id
         existe_old.pedido_id = dados.pedido_id
 
-        # salva alteracoes no banco
+        # atualiza o banco
         session.commit()
         session.refresh(existe_old)
 
@@ -70,11 +68,11 @@ def delete_is_combo(session, id):
     existe = session.query(Is_comboModel).filter(Is_comboModel.id == id).first()
     if not existe:
         session.rollback()
-        return ErroIs_comboNaoEncontrado()
+        raise ErroIs_comboNaoEncontrado()
 
     # tratamento de erros
     try:
-        # deleta e salva mudancas
+        # deleta o objeto e salva no banco
         session.delete(existe)
         session.commit()
 

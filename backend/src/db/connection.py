@@ -1,7 +1,7 @@
-from sqlalchemy.orm import declarative_base, sessionmaker
-from sqlalchemy import create_engine
-from dotenv import load_dotenv
 from os import getenv
+from dotenv import load_dotenv
+from sqlalchemy import create_engine, event
+from sqlalchemy.orm import declarative_base, sessionmaker
 
 # carrega variaveis de ambiente
 load_dotenv()
@@ -19,3 +19,5 @@ engine = create_engine(db)
 
 # define a session
 Session = sessionmaker(bind=engine)
+
+Base.metadata.create_all(bind=engine)
