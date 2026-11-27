@@ -1,4 +1,4 @@
-import { api, type CardapioEstoque, type Estoque } from "./api";
+import { api, type CardapioEstoque, type Estoque, type Row } from "./api";
 
 // Combo composition is kept on this device: the external API has no table for it.
 const KEY = "saborcia.combos";
@@ -57,19 +57,58 @@ export async function deductStock(orderedIds: number[], pedidoId: number, extras
   return log.length;
 }
 
-/** Returns to stock whatever an order took out (only if this device logged that deduction) and logs the entry once. */
+const saidaMotivo = (id: number) => `Pedido #${id}`;
+const entradaMotivos = (id: number) => [`Cancelamento do pedido #${id}`, `Ajuste do pedido #${id}`];
+
+/** How much of each ingredient the order still holds, according to this device's movement log. */
+export function netTaken(pedidoId: number, estoque: Estoque[], movs: Movimento[] = readMovimentos()): Map<number, number> {
+  const net = new Map<number, number>();
+  for (const m of movs) {
+    const sign = m.tipo === "Saída" && m.motivo === saidaMotivo(pedidoId) ? 1 : m.tipo === "Entrada" && entradaMotivos(pedidoId).includes(m.motivo) ? -1 : 0;
+    if (!sign) continue;
+    const id = m.estoque_id ?? estoque.find((e) => e.nome === m.estoque)?.id;
+    if (id != null) net.set(id, (net.get(id) ?? 0) + sign * m.qtd);
+  }
+  return net;
+}
+
+/** Returns to stock whatever the order still holds (only if this device logged the deduction), so it is never returned twice. */
 export async function restoreStock(pedidoId: number) {
-  const movs = readMovimentos();
-  const saidas = movs.filter((m) => m.tipo === "Saída" && m.motivo === `Pedido #${pedidoId}`);
-  if (!saidas.length || movs.some((m) => m.tipo === "Entrada" && m.motivo === `Cancelamento do pedido #${pedidoId}`)) return 0;
   const estoque = await api.list<Estoque>("estoque");
   const log: Movimento[] = [];
-  for (const m of saidas) {
-    const e = estoque.find((x) => (m.estoque_id ? x.id === m.estoque_id : x.nome === m.estoque)); if (!e) continue;
-    await api.update("estoque", e.id, { qtd: Number(e.qtd) + m.qtd });
-    e.qtd = Number(e.qtd) + m.qtd;
-    log.push({ id: Date.now() + e.id, estoque: e.nome, estoque_id: e.id, tipo: "Entrada", qtd: m.qtd, dt: new Date().toISOString(), motivo: `Cancelamento do pedido #${pedidoId}` });
+  for (const [eid, n] of netTaken(pedidoId, estoque)) {
+    const e = estoque.find((x) => x.id === eid); if (!e || n <= 0) continue;
+    await api.update("estoque", eid, { qtd: Number(e.qtd) + n }, e as unknown as Row);
+    log.push({ id: Date.now() + eid, estoque: e.nome, estoque_id: eid, tipo: "Entrada", qtd: n, dt: new Date().toISOString(), motivo: `Cancelamento do pedido #${pedidoId}` });
   }
   appendMovimentos(log);
   return log.length;
+}
+
+/** Applies to stock the difference caused by editing an order's items. */
+export async function adjustStock(pedidoId: number, addedIds: number[], removedIds: number[]) {
+  if (!addedIds.length && !removedIds.length) return 0;
+  const [ficha, estoque] = await Promise.all([api.list<CardapioEstoque>("cardapio_has_estoque"), api.list<Estoque>("estoque")]);
+  const plus = ingredientUsage(expandItems(addedIds), ficha), minus = ingredientUsage(expandItems(removedIds), ficha);
+  const held = netTaken(pedidoId, estoque);
+  const log: Movimento[] = [];
+  for (const eid of new Set([...plus.keys(), ...minus.keys()])) {
+    const e = estoque.find((x) => x.id === eid); if (!e) continue;
+    let delta = (plus.get(eid) ?? 0) - (minus.get(eid) ?? 0);
+    if (delta < 0) delta = -Math.min(-delta, Math.max(0, held.get(eid) ?? 0));
+    if (!delta) continue;
+    await api.update("estoque", eid, { qtd: Math.max(0, Number(e.qtd) - delta) }, e as unknown as Row);
+    log.push({ id: Date.now() + eid, estoque: e.nome, estoque_id: eid, tipo: delta > 0 ? "Saída" : "Entrada", qtd: Math.abs(delta), dt: new Date().toISOString(), motivo: delta > 0 ? saidaMotivo(pedidoId) : `Ajuste do pedido #${pedidoId}` });
+  }
+  appendMovimentos(log);
+  return log.length;
+}
+
+/** Detaches a deleted order's history, because the server may give its number to a new order. */
+export function archiveMovimentos(pedidoId: number) {
+  const motivos = [saidaMotivo(pedidoId), ...entradaMotivos(pedidoId)];
+  const movs = readMovimentos();
+  if (!movs.some((m) => motivos.includes(m.motivo))) return;
+  localStorage.setItem(MOV_KEY, JSON.stringify(movs.map((m) => (motivos.includes(m.motivo) ? { ...m, motivo: `${m.motivo} (excluído)` } : m))));
+  window.dispatchEvent(new Event(MOV_EVENT));
 }

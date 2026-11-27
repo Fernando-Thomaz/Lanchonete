@@ -41,13 +41,33 @@ function friendly(d: string) {
   return d.length > 200 ? d.slice(0, 200) + "…" : d;
 }
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** The hosted API sleeps when idle, so cold starts answer 502/503/504 or drop the connection for a while. */
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, {
-    ...init,
-    headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
-  });
-  const text = await res.text();
-  const data = text ? JSON.parse(text) : null;
+  const method = (init?.method ?? "GET").toUpperCase();
+  // Retrying a POST could create duplicates; GET/PUT/DELETE are safe to repeat.
+  const attempts = method === "POST" ? 1 : 3;
+  let res!: Response;
+  let text = "";
+  for (let i = 0; i < attempts; i++) {
+    try {
+      res = await fetch(`${API_URL}${path}`, {
+        ...init,
+        headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
+      });
+      text = await res.text();
+      if (![502, 503, 504].includes(res.status) || i === attempts - 1) break;
+    } catch (e) {
+      if (i === attempts - 1) throw new Error("Não foi possível falar com o servidor. Tente novamente em instantes.");
+    }
+    await sleep(1500 * (i + 1));
+  }
+  let data: any = null;
+  if (text) {
+    try { data = JSON.parse(text); }
+    catch { if (res.ok) throw new Error("Resposta inválida do servidor."); }
+  }
   // The API sometimes answers 200 with an error body ({ status_code: 500, detail }).
   const failed = !res.ok || (data && typeof data === "object" && !Array.isArray(data) && Number(data.status_code) >= 400);
   if (failed) {
@@ -65,9 +85,13 @@ export const api = {
   create: (r: Resource, body: object) =>
     request<{ id: number; mensagem: string }>(`/${r}/create`, { method: "POST", body: JSON.stringify(body) }),
   // The API overwrites every column on update, so merge partial changes into the current row first.
-  update: async (r: Resource, id: number, body: object) => {
-    const cur = (await request<Row[]>(`/${r}/list`)).find((x) => x.id === id) ?? {};
-    const { id: _id, ...rest } = { ...cur, ...body } as Row;
+  // Pass `current` when the row was just fetched, to skip re-downloading the whole table.
+  update: async (r: Resource, id: number, body: object, current?: Row) => {
+    const cur = current ?? (await request<Row[]>(`/${r}/list`)).find((x) => x.id === id);
+    if (!cur) throw new Error("Registro não encontrado. Atualize a página e tente de novo.");
+    const { id: _id, ...merged } = { ...cur, ...body } as Row;
+    // Only plain columns go back to the server; nested objects/lists are relations it did not ask for.
+    const rest = Object.fromEntries(Object.entries(merged).filter(([, v]) => v === null || typeof v !== "object"));
     return request(`/${r}/update/${id}`, { method: "PUT", body: JSON.stringify(rest) });
   },
   remove: (r: Resource, id: number) => request(`/${r}/delete/${id}`, { method: "DELETE" }),

@@ -1,30 +1,32 @@
 import { useEffect, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { BarChart3, Bike, Boxes, ClipboardList, LayoutDashboard, Moon, Percent, Plus, Settings, Sofa, Sun, UserCog, Users, UtensilsCrossed } from "lucide-react";
+import { BarChart3, Bike, Boxes, ClipboardList, LayoutDashboard, Menu, Moon, Percent, Settings, Sofa, Sun, UserCog, Users, UtensilsCrossed } from "lucide-react";
 import { useSettings } from "@/lib/settings";
 import { cn } from "@/lib/utils";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
-const groups = [
-  [
-    { title: "Início", url: "/", icon: LayoutDashboard },
-    { title: "Pedidos", url: "/pedidos", icon: ClipboardList },
-    { title: "Mesas", url: "/mesas", icon: Sofa },
-    { title: "Entregas", url: "/entregas", icon: Bike },
-  ],
-  [
-    { title: "Cardápio", url: "/cardapio", icon: UtensilsCrossed },
-    { title: "Promoções", url: "/promocoes", icon: Percent },
-    { title: "Estoque", url: "/estoque", icon: Boxes },
-    { title: "Clientes", url: "/clientes", icon: Users },
-    { title: "Equipe", url: "/funcionarios", icon: UserCog },
-  ],
-  [
-    { title: "Relatórios", url: "/relatorios", icon: BarChart3 },
-    { title: "Ajustes", url: "/configuracoes", icon: Settings },
-  ],
+// Menu principal: somente estas abas.
+const principais = [
+  { title: "Início", url: "/", icon: LayoutDashboard },
+  { title: "Pedidos", url: "/pedidos", icon: ClipboardList },
+  { title: "Mesas", url: "/mesas", icon: Sofa },
+  { title: "Cardápio", url: "/cardapio", icon: UtensilsCrossed },
+  { title: "Relatórios", url: "/relatorios", icon: BarChart3 },
+  { title: "Ajustes", url: "/configuracoes", icon: Settings },
 ] as const;
 
-/** Topo discreto (marca + data) e navegação em dock flutuante, centralizada na base da tela. */
+// Telas secundárias: ficam apenas no menu hambúrguer.
+const secundarias = [
+  { title: "Entregas", url: "/entregas", icon: Bike },
+  { title: "Promoções", url: "/promocoes", icon: Percent },
+  { title: "Estoque", url: "/estoque", icon: Boxes },
+  { title: "Clientes", url: "/clientes", icon: Users },
+  { title: "Equipe", url: "/funcionarios", icon: UserCog },
+] as const;
+
+const isActive = (path: string, url: string) => path === url || (url === "/pedidos" && path === "/novo-pedido");
+
+/** Cabeçalho fixo com as abas principais (telas grandes) e menu hambúrguer. */
 export function TopNav() {
   const { nome } = useSettings();
   const path = useRouterState({ select: (r) => r.location.pathname });
@@ -42,33 +44,48 @@ export function TopNav() {
     try { localStorage.setItem("theme", next ? "dark" : "light"); } catch { /* ignore */ }
   };
 
-  return (
-    <>
-      <header className="mx-auto flex w-full max-w-7xl items-center justify-between px-5 pt-6 md:px-8">
-        <Link to="/" className="text-[17px] font-semibold tracking-tight">{nome}</Link>
-        <div className="flex items-center gap-3">
-        <span suppressHydrationWarning className="text-sm capitalize text-muted-foreground">{new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}</span>
-          <button type="button" onClick={toggleTheme} aria-label={dark ? "Ativar modo claro" : "Ativar modo escuro"} title={dark ? "Modo claro" : "Modo escuro"} className="flex size-9 items-center justify-center rounded-full border border-border bg-card text-foreground transition-colors hover:bg-accent">
-            {dark ? <Sun className="size-[18px]" /> : <Moon className="size-[18px]" />}
-          </button>
-        </div>
-      </header>
+  const [open, setOpen] = useState(false);
+  const drawerLink = (i: (typeof principais)[number] | (typeof secundarias)[number]) => (
+    <Link key={i.url} to={i.url} onClick={() => setOpen(false)} aria-current={isActive(path, i.url) ? "page" : undefined}
+      className={cn("flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors", isActive(path, i.url) ? "bg-foreground text-background" : "hover:bg-accent")}>
+      <i.icon className="size-5" />{i.title}
+    </Link>
+  );
 
-      <nav aria-label="Seções" className="fixed bottom-4 left-1/2 z-30 flex max-w-[calc(100vw-1.5rem)] -translate-x-1/2 items-center gap-0.5 overflow-x-auto rounded-[26px] border border-border bg-card/80 p-2 shadow-[0_10px_40px_rgba(0,0,0,0.14)] backdrop-blur-xl backdrop-saturate-150 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <Link to="/novo-pedido" className={cn("mr-1 flex min-w-[60px] shrink-0 flex-col items-center gap-1 rounded-[18px] bg-primary px-1 py-2 text-[10.5px] font-semibold text-primary-foreground transition hover:opacity-90", path === "/novo-pedido" && "ring-2 ring-ring ring-offset-2 ring-offset-card")}>
-          <Plus className="size-[21px]" /> Novo
-        </Link>
-        {groups.map((g, gi) => (
-          <div key={gi} className="flex shrink-0 items-center gap-0.5">
-            <span aria-hidden className="mx-1.5 h-8 w-px bg-border" />
-            {g.map((i) => (
-              <Link key={i.url} to={i.url} className={cn("flex min-w-[60px] shrink-0 flex-col items-center gap-1 rounded-[18px] px-1 py-2 text-[10.5px] font-medium transition-colors", path === i.url ? "bg-foreground text-background" : "text-muted-foreground hover:bg-accent hover:text-foreground")}>
-                <i.icon className="size-[21px]" />{i.title}
-              </Link>
-            ))}
-          </div>
-        ))}
-      </nav>
-    </>
+  return (
+    <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-xl">
+      <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-3 px-4 md:px-8">
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetTrigger asChild>
+            <button type="button" aria-label="Abrir menu" className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-border bg-card transition-colors hover:bg-accent">
+              <Menu className="size-5" />
+            </button>
+          </SheetTrigger>
+          <SheetContent side="left" aria-describedby={undefined} className="flex w-72 max-w-[85vw] flex-col gap-1 overflow-y-auto p-4">
+            <SheetTitle className="mb-3 truncate px-3 pr-8">{nome}</SheetTitle>
+            <nav aria-label="Menu" className="flex flex-col gap-1">
+              {principais.map(drawerLink)}
+              <p className="mt-3 border-t border-border px-3 pt-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Mais opções</p>
+              {secundarias.map(drawerLink)}
+            </nav>
+          </SheetContent>
+        </Sheet>
+
+        <Link to="/" className="min-w-0 truncate text-[17px] font-semibold tracking-tight">{nome}</Link>
+
+        <nav aria-label="Menu principal" className="ml-auto hidden items-center gap-1 lg:flex">
+          {principais.map((i) => (
+            <Link key={i.url} to={i.url} aria-current={isActive(path, i.url) ? "page" : undefined}
+              className={cn("flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition-colors", isActive(path, i.url) ? "bg-foreground text-background" : "text-muted-foreground hover:bg-accent hover:text-foreground")}>
+              <i.icon className="hidden size-4 xl:block" />{i.title}
+            </Link>
+          ))}
+        </nav>
+
+        <button type="button" onClick={toggleTheme} aria-label={dark ? "Ativar modo claro" : "Ativar modo escuro"} title={dark ? "Modo claro" : "Modo escuro"} className="ml-auto flex size-10 shrink-0 items-center justify-center rounded-full border border-border bg-card text-foreground transition-colors hover:bg-accent lg:ml-2">
+          {dark ? <Sun className="size-[18px]" /> : <Moon className="size-[18px]" />}
+        </button>
+      </div>
+    </header>
   );
 }

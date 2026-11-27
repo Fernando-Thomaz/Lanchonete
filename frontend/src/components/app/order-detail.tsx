@@ -6,6 +6,7 @@ import { api, brl, fmtTime } from "@/lib/api";
 import { restoreStock } from "@/lib/combos";
 import { STATUS, type OrderView } from "@/lib/orders";
 import { StatusBadge } from "./ui-bits";
+import { OrderActions } from "./order-actions";
 
 export function useSetStatus() {
   const qc = useQueryClient();
@@ -60,7 +61,10 @@ export function OrderDetail({ order, onClose }: { order: OrderView | null; onClo
           </div>
           <div><p className="mb-2 text-sm font-semibold">Linha do tempo</p>
             <ol className="space-y-1 border-l-2 border-primary/30 pl-4 text-sm">{order.historico.map((h) => <li key={h.id}><span className="text-muted-foreground">{fmtTime(h.dt)}</span> · {h.status_pedido}</li>)}</ol></div>
-          <StatusSelect order={order} />
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-4">
+            <StatusSelect order={order} />
+            <div className="flex gap-2"><OrderActions key={order.pedido.id} order={order} labels /></div>
+          </div>
         </>}
       </DialogContent>
     </Dialog>

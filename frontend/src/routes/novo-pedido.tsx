@@ -119,7 +119,7 @@ function NovoPedido() {
             </div>)}
         </div>
 
-        <aside id="carrinho" className="h-fit scroll-mt-20 rounded-3xl bg-card p-5 shadow-soft sm:p-6 lg:sticky lg:top-6">
+        <aside id="carrinho" className="h-fit scroll-mt-20 rounded-3xl bg-card p-5 shadow-soft sm:p-6 lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto">
           <h2 className="mb-3 flex items-center gap-2 text-lg font-bold"><ShoppingBag className="size-5 text-primary" /> Pedido</h2>
           <div className="mb-3 grid grid-cols-3 gap-1 rounded-xl bg-muted p-1">{TIPOS.map((t) => <button key={t} onClick={() => setTipo(t)} className={cn("rounded-lg py-1.5 text-sm font-semibold transition", tipo === t ? "bg-card shadow-soft text-primary" : "text-muted-foreground")}>{t}</button>)}</div>
           <div className="mb-3 flex gap-2">
@@ -162,7 +162,7 @@ function NovoPedido() {
         </aside>
       </div>
       {cart.length > 0 && (
-        <div className="fixed inset-x-4 bottom-28 z-30 lg:hidden">
+        <div className="fixed inset-x-4 bottom-4 z-30 lg:hidden">
           <Button asChild className="h-12 w-full justify-between bg-flame px-4 text-base shadow-flame">
             <a href="#carrinho"><span className="flex items-center gap-2"><ShoppingBag /> {cart.reduce((s, l) => s + l.qtd, 0)} {cart.reduce((s, l) => s + l.qtd, 0) === 1 ? "item" : "itens"}</span><b>Ver pedido · {brl(total)}</b></a>
           </Button>

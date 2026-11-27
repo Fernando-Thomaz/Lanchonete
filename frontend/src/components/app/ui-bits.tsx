@@ -6,10 +6,10 @@ import { statusTone } from "@/lib/orders";
 
 export function PageHeader({ title, subtitle, actions }: { title: string; subtitle?: string; actions?: ReactNode }) {
   return (
-    <div className="mb-9 flex flex-wrap items-end justify-between gap-3 sm:gap-4">
+    <div className="mb-6 flex flex-wrap items-end justify-between gap-3 sm:gap-4">
       <div>
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">{title}</h1>
-        {subtitle && <p className="mt-1 max-w-2xl text-base text-muted-foreground sm:text-lg">{subtitle}</p>}
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{title}</h1>
+        {subtitle && <p className="mt-1 max-w-2xl text-sm text-muted-foreground sm:text-base">{subtitle}</p>}
       </div>
       {actions && <div className="flex flex-wrap gap-2 max-sm:w-full [&>*]:max-sm:flex-1">{actions}</div>}
     </div>
@@ -18,10 +18,10 @@ export function PageHeader({ title, subtitle, actions }: { title: string; subtit
 
 export function Panel({ title, action, children, className }: { title?: string; action?: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <section className={cn("rounded-3xl bg-card p-5 shadow-soft sm:p-7", className)}>
+    <section className={cn("rounded-3xl bg-card p-4 shadow-soft sm:p-6", className)}>
       {(title || action) && (
         <div className="mb-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-          {title && <h2 className="text-xl font-semibold">{title}</h2>}
+          {title && <h2 className="text-lg font-semibold">{title}</h2>}
           {action}
         </div>
       )}
@@ -38,7 +38,7 @@ export function StatCard({ label, value, icon: Icon, hint, tone = "default" }: {
         <p className={cn("text-sm font-medium", tone === "default" && "text-muted-foreground")}>{label}</p>
         <Icon className={cn("size-5", tone === "default" ? "text-muted-foreground" : "opacity-80")} />
       </div>
-      <p className="mt-5 text-4xl font-bold tracking-tight sm:text-5xl">{value}</p>
+      <p className="mt-3 break-words text-2xl font-bold tracking-tight sm:text-3xl">{value}</p>
       {hint && <p className={cn("mt-1 text-xs", tone === "default" ? "text-muted-foreground" : "opacity-85")}>{hint}</p>}
     </div>
   );

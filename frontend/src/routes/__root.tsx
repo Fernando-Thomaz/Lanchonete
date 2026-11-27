@@ -130,7 +130,7 @@ function RootComponent() {
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <div className="min-h-screen w-full">
         <TopNav />
-        <main className="mx-auto w-full max-w-7xl px-5 pb-36 pt-8 md:px-8">
+        <main className="mx-auto w-full max-w-7xl px-4 pb-12 pt-6 md:px-8">
           <Outlet />
         </main>
       </div>
